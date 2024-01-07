@@ -3,7 +3,8 @@ const cors = require('cors');
 const app = express();
 const {
     MongoClient,
-    ServerApiVersion
+    ServerApiVersion,
+    ObjectId
 } = require('mongodb');
 require('dotenv').config()
 const port = process.env.PORT || 5000;
@@ -27,7 +28,28 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        //await client.connect();
+
+        // database name and collection name
+        const bookCollection = client.db('libraryDB').collection('books');
+
+
+        // Get operation (read data)
+        app.get('/book', async(req, res) =>{
+            const cursor = bookCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        // get a single book data using id
+        app.get('/book/:id', async(req, res) =>{
+            const id = req.params.id;
+            const query = {
+                _id : new ObjectId(id),
+            }
+            const result = await bookCollection.findOne(query);
+            res.send(result);
+        })
         // Send a ping to confirm a successful connection
         await client.db("admin").command({
             ping: 1
@@ -35,7 +57,7 @@ async function run() {
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
-        await client.close();
+        //await client.close();
     }
 }
 run().catch(console.dir);
