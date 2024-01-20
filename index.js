@@ -35,20 +35,26 @@ async function run() {
 
 
         // Get operation (read data)
-        app.get('/book', async(req, res) =>{
+        app.get('/books', async(req, res) =>{
             const cursor = bookCollection.find();
             const result = await cursor.toArray();
             res.send(result);
         })
 
         // get a single book data using id
-        app.get('/book/:id', async(req, res) =>{
+        app.get('/books/:id', async(req, res) =>{
             const id = req.params.id;
             const query = {
                 _id : new ObjectId(id),
             }
             const result = await bookCollection.findOne(query);
             res.send(result);
+        })
+
+        // to see number of document in the collection
+        app.get('/booksCount', async(req, res) =>{
+            const count = await bookCollection.estimatedDocumentCount();
+            res.send({count})
         })
         // Send a ping to confirm a successful connection
         await client.db("admin").command({
