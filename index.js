@@ -68,6 +68,16 @@ async function run() {
             res.send(result);
         })
 
+        // Delete Operation
+        app.delete('/books/:id', async(req, res) =>{
+            const id = req.params.id;
+            const query = {
+                _id: new ObjectId(id)
+            };
+            const result = await bookCollection.deleteOne(query);
+            res.send(result);
+        })
+
         // Get operation (read data)
         app.get('/books', async (req, res) => {
             const page = parseInt(req.query.page);
