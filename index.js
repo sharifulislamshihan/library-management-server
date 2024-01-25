@@ -33,33 +33,67 @@ async function run() {
         // database name and collection name
         const bookCollection = client.db('libraryDB').collection('books');
 
+        // post data from client side
+        app.post('/books', async (req, res) => {
+            const newBooks = req.body;
+            // saving data from server to mongoDB
+            const result = await bookCollection.insertOne(newBooks)
+            res.send(result);
+        })
+
+        // update Specific data
+        app.put('/books/:id', async (req, res) => {
+            // extracting the value of id from the url
+            const id = req.params.id;
+            const filter = { 
+                _id: new ObjectId(id) 
+            };
+            // upsert is the combination of update and insert
+            const options = { 
+                upsert: true 
+            };
+            const updateBook = req.body;
+            const book = {
+                $set: {
+                    name: updateBook.name,
+                    author: updateBook.author,
+                    category: updateBook.category,
+                    quantity: updateBook.quantity,
+                    description: updateBook.description,
+                    rating: updateBook.rating,
+                    image: updateBook.image
+                }
+            }
+            const result = await bookCollection.updateOne(filter, book, options)
+            res.send(result);
+        })
 
         // Get operation (read data)
-        app.get('/books', async(req, res) =>{
+        app.get('/books', async (req, res) => {
             const page = parseInt(req.query.page);
             const size = parseInt(req.query.size);
             const cursor = bookCollection
-            .skip(page * size)
-            .limit(size)
-            .find();
+                .find()
+                .skip(page * size)
+                .limit(size);
             const result = await cursor.toArray();
             res.send(result);
         })
 
         // get a single book data using id
-        app.get('/books/:id', async(req, res) =>{
+        app.get('/books/:id', async (req, res) => {
             const id = req.params.id;
             const query = {
-                _id : new ObjectId(id),
+                _id: new ObjectId(id),
             }
             const result = await bookCollection.findOne(query);
             res.send(result);
         })
 
         // to see number of document in the collection
-        app.get('/booksCount', async(req, res) =>{
+        app.get('/booksCount', async (req, res) => {
             const count = await bookCollection.estimatedDocumentCount();
-            res.send({count})
+            res.send({ count })
         })
         // Send a ping to confirm a successful connection
         await client.db("admin").command({
